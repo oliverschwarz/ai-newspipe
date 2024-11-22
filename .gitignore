@@ -3,6 +3,11 @@ venv/
 env/
 .env
 
+#
+# Application directories
+#
+summaries/
+
 # Python cache files
 __pycache__/
 *.py[cod]

@@ -53,3 +53,23 @@ You will need an OpenAI API Key that you can get on their [API dashboard](https:
     echo "OPENAI_API_KEY=your-key-here" >> .env
 
 Then open the file and put your OpenAI API key there. We will need it later to ask OpenAI to optimize your news.
+
+## Running the script
+
+### Verbose output
+
+You can activate verbose output of the script, especially the feedreader (for validating the run):
+
+    urls = ["https://example.com/feed"]
+    reader = FeedReader(urls, verbose=True)
+    entries = reader.fetch_feeds()
+
+It will give you an output like:
+
+    2024-11-22 10:15:30 - src.feed_reader - INFO - Validating 1 URLs
+    2024-11-22 10:15:30 - src.feed_reader - INFO - Valid URL added: https://example.com/feed
+    2024-11-22 10:15:30 - src.feed_reader - INFO - Starting to fetch 1 feeds
+    2024-11-22 10:15:31 - src.feed_reader - INFO - Fetching feed: https://example.com/feed
+    2024-11-22 10:15:31 - src.feed_reader - INFO - Successfully fetched feed: Tech News (https://example.com/feed)
+    2024-11-22 10:15:31 - src.feed_reader - INFO - Found 15 entries
+    2024-11-22 10:15:31 - src.feed_reader - INFO - Completed fetching all feeds. Total entries: 15
