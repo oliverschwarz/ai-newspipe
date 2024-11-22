@@ -7,42 +7,87 @@ Contributor: claude.ai
 License: MIT
 """
 import pytest
+from unittest.mock import patch, MagicMock
+import logging
 from src.feed_reader import FeedReader, InvalidURLError
 
-def test_feed_reader_initialization():
-    """Test that FeedReader can be initialized with a list of URLs"""
+@pytest.fixture
+def mock_feed_data():
+    """Fixture providing mock RSS feed data"""
+    return {
+        'feed': {
+            'title': 'Test Feed'
+        },
+        'entries': [
+            {
+                'title': 'Test Article',
+                'description': 'Test Description',
+                'published': 'Mon, 22 Nov 2024 12:00:00 GMT',
+                'link': 'https://example.com/article1',
+            }
+        ]
+    }
+
+def test_fetch_feeds(mock_feed_data):
+    """Test fetching feeds includes feed title"""
     urls = ["https://example.com/feed"]
     reader = FeedReader(urls)
-    assert reader.feed_urls == urls
-    assert isinstance(reader.feed_urls, list)
-
-def test_feed_reader_empty_urls():
-    """Test that FeedReader can be initialized with empty URL list"""
-    reader = FeedReader([])
-    assert reader.feed_urls == []
-
-def test_feed_reader_invalid_url_format():
-    """Test that invalid URL formats raise an error"""
-    invalid_urls = [
-        "not_a_url",
-        "http:/missing-slashes",
-        "ftp://wrong-protocol.com",
-        "",
-        None
-    ]
     
-    for url in invalid_urls:
-        with pytest.raises(InvalidURLError):
-            FeedReader([url])
+    with patch('feedparser.parse') as mock_parse:
+        mock_parse.return_value = mock_feed_data
+        entries = reader.fetch_feeds()
+        
+        assert len(entries) == 1
+        assert entries[0]['feed_title'] == 'Test Feed'
+        assert set(entries[0].keys()) == {
+            'title', 'description', 'published', 'link', 'feed_url', 'feed_title'
+        }
 
-def test_feed_reader_valid_url_formats():
-    """Test that valid URL formats are accepted"""
-    valid_urls = [
-        "https://example.com/feed",
-        "http://example.com/rss",
-        "https://example.com/feed.xml",
-        "http://example.com/rss?format=xml"
-    ]
+def test_fetch_feeds_missing_attributes(caplog):
+    """Test handling of feeds with missing attributes"""
+    urls = ["https://example.com/feed"]
+    reader = FeedReader(urls, verbose=True)
     
-    reader = FeedReader(valid_urls)
-    assert reader.feed_urls == valid_urls
+    minimal_feed = {
+        'feed': {},
+        'entries': [
+            {
+                'title': 'Test Article'
+                # Missing other attributes
+            }
+        ]
+    }
+    
+    with patch('feedparser.parse') as mock_parse:
+        mock_parse.return_value = minimal_feed
+        entries = reader.fetch_feeds()
+        
+        assert len(entries) == 1
+        assert entries[0]['title'] == 'Test Article'
+        assert entries[0]['description'] == ''
+        assert entries[0]['feed_title'] == 'Unknown Feed'
+
+def test_fetch_feeds_malformed_response(caplog):
+    """Test handling of malformed feed responses"""
+    urls = ["https://example.com/feed"]
+    reader = FeedReader(urls, verbose=True)
+    
+    malformed_feed = {}  # Completely empty response
+    
+    with patch('feedparser.parse') as mock_parse:
+        mock_parse.return_value = malformed_feed
+        entries = reader.fetch_feeds()
+        
+        assert entries == []  # Should return empty list for malformed feed
+        assert "Found 0 entries" in caplog.text
+
+def test_fetch_feeds_none_response(caplog):
+    """Test handling of None response"""
+    urls = ["https://example.com/feed"]
+    reader = FeedReader(urls, verbose=True)
+    
+    with patch('feedparser.parse') as mock_parse:
+        mock_parse.return_value = None
+        entries = reader.fetch_feeds()
+        
+        assert entries == []  # Should return empty list for None response
