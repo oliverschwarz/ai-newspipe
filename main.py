@@ -1,6 +1,5 @@
 """
 Main python
-
 Prepares logging, fetches rss urls, fetch content.
 
 Author: Oliver Schwarz
@@ -10,10 +9,13 @@ License: MIT
 """
 # main.py
 import os
+import json
 import logging
 from datetime import datetime
+from dotenv import load_dotenv
 from src.url_parser import URLFileParser
 from src.feed_reader import FeedReader
+from src.ai_analyzer import AIAnalyzer
 
 def setup_logging():
     """Setup logging configuration"""
@@ -31,8 +33,8 @@ def setup_logging():
     
     return logger
 
-def save_entries_to_markdown(entries, output_dir):
-    """Save feed entries to a markdown file with timestamp"""
+def save_to_markdown(content: str, output_dir: str) -> str:
+    """Save content to a markdown file with timestamp"""
     # Create timestamp for filename
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     output_file = os.path.join(output_dir, f'ai_news_summary_{timestamp}.md')
@@ -41,31 +43,14 @@ def save_entries_to_markdown(entries, output_dir):
     os.makedirs(output_dir, exist_ok=True)
     
     with open(output_file, 'w') as f:
-        # Write header
-        f.write(f"# AI News Summary\n\n")
-        f.write(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
-        
-        # Group entries by feed
-        feeds = {}
-        for entry in entries:
-            feed_title = entry['feed_title']
-            if feed_title not in feeds:
-                feeds[feed_title] = []
-            feeds[feed_title].append(entry)
-        
-        # Write entries grouped by feed
-        for feed_title, feed_entries in feeds.items():
-            f.write(f"## {feed_title}\n\n")
-            
-            for entry in feed_entries:
-                f.write(f"### [{entry['title']}]({entry['link']})\n\n")
-                f.write(f"*Published: {entry['published']}*\n\n")
-                f.write(f"{entry['description']}\n\n")
-                f.write("---\n\n")
+        f.write(content)
     
     return output_file
 
 def main():
+    # Load environment variables from .env file
+    load_dotenv()
+    
     logger = setup_logging()
     
     # Configuration
@@ -75,6 +60,11 @@ def main():
     
     try:
         logger.info("Starting AI Newspipe")
+        
+        # Verify OpenAI API key is available
+        if not os.getenv('OPENAI_API_KEY'):
+            logger.error("OpenAI API key not found in .env file")
+            raise ValueError("Please add OPENAI_API_KEY to your .env file")
         
         # Parse URLs
         logger.info(f"Reading URLs from {sources_file}")
@@ -91,12 +81,31 @@ def main():
         entries = feed_reader.fetch_feeds()
         
         if not entries:
-            logger.warning("No entries found!")
+            logger.warning("No entries from today found!")
             return
         
+        # Show entry count and size estimate
+        entries_json = json.dumps(entries)
+        json_size_kb = len(entries_json)/1024
+        json_size_tokens = len(entries_json)/4  # Rough estimate of tokens (4 chars per token)
+        
+        logger.info(f"Prepared payload summary:")
+        logger.info(f"Number of entries: {len(entries)}")
+        logger.info(f"Payload size: {json_size_kb:.1f}KB")
+        logger.info(f"Estimated tokens: {json_size_tokens:.0f}")
+        
+        if json_size_tokens > 6000:  # Conservative limit for GPT-4
+            logger.warning("Payload might still be too large for API!")
+            logger.warning("Consider further reducing entry count or description length")
+        
+        # Analyze and process feeds
+        logger.info("Analyzing feeds with AI...")
+        analyzer = AIAnalyzer(verbose=True)
+        markdown_content = analyzer.process_feeds(entries)
+        
         # Save to markdown
-        logger.info(f"Saving {len(entries)} entries...")
-        output_file = save_entries_to_markdown(entries, output_dir)
+        logger.info("Saving processed content...")
+        output_file = save_to_markdown(markdown_content, output_dir)
         logger.info(f"Saved to: {output_file}")
         
         logger.info("Process completed successfully!")
