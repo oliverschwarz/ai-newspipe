@@ -35,3 +35,21 @@ The general idea is to fetch RSS feeds from various sources, put them into a lig
 In this section I will document what I come across and what I have to look up. I will note this here for later so that I do not lose focus.
 
 * What is docstring? (Probably some documentation generator)
+
+## Installation
+
+I document everything around the installation from what I know & learn. However, I can probably only document from a macOS view. I recommend to run the script from within a virtual environment to now interfere with local python installations from macOS. You can do so by:
+
+    $ python -m venv venv
+    $ source venv/bin/activate
+
+Then you install all the necessary libraries (residing in _requirements.txt_):
+
+    $ pip install -r requirements.txt
+
+You will need an OpenAI API Key that you can get on their [API dashboard](https://platform.openai.com/). Remember, that you need a separate subscription for using the API. **Keep your API key secret.** In this library we will use a `.env` file to store your secret key.
+
+    touch .env
+    echo "OPENAI_API_KEY=your-key-here" >> .env
+
+Then open the file and put your OpenAI API key there. We will need it later to ask OpenAI to optimize your news.
