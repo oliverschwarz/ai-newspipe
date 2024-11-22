@@ -28,4 +28,5 @@ Icon
 # Editors
 #
 *.sublime-workspace
+*.code-workspace
 /.vscode
