@@ -33,3 +33,22 @@ I have two requests: Can I create a verbose output to document what is being don
 
 # Now to the sources of the RSS urls
 Okay, next step for me is store the RSS Urls in a separate file each in a single line. Then parse the file and fetch the URLs and then trigger the feedparser to fetch all the feeds to return them all in one structured content. I expect that the parsing of the source file with the URLs and the feedparser should be separated components. How are we going to put them together. Please start by adding tests for file parsing, then determine the source of the RSS URLs (in a file called news_sources.txt) and then explain to me how we will put the functionality together in a python manner - and how we are going to test it all end to end.
+
+# Get going with ChatGPT
+Okay, let's get going again. I just talked to ChatGPT about the format that would help the most to summarize news and it's JSON. So what we need to do now is to parse the feed response into JSON format, push it to the OpenAI api, write a good prompt with requirements for summarizing and highlighting and take the response again to store it in the MD file. I think, Markdown creation can be done by ChatGPT, so we can include that in the prompt.
+
+# Too large of a request
+Okay, the request is too large for the ChatGPT API. We should restrict the fetched news to dates from today and yesterday and discard all news that are older than 2 days. Let's see how many entries we get then before sending them to the API.
+
+# Too complex code
+Uuuuh lots of errors. Probably with the parse_date function. How should we go on? We could try to fix the multiple errors or we can just restrict the rss feeds by the 3 most actual entries (which is much more simple than the date parsing). The error occurs after parsing the 2nd feed with '2024-11-22 13:27:27 - src.feed_reader - ERROR - Error fetching feed https://blog.google/technology/ai/rss/: can't compare offset-naive and offset-aware datetimes"
+
+# Request still too large
+Okay, there's still too much payload for ChatGPT. The API responses with: Request too large for gpt-4 in organization org-SckeNQ4QZAbdySV3jzSmbtCk on tokens per min (TPM): Limit 10000, Requested 13396. The input or output tokens must be reduced in order to run successfully. Visit https://platform.openai.com/account/rate-limits to learn more"
+Please come up with some ideas. Maybe we have to introduce date parsing again. I really just want to have the news from today. We could skip all feeds that do not have news from today. Before you write code now, let's discuss about the options. What possible solutions do you come up with?
+
+# Aaaaand date parsing again
+Well these are some great ideas, thanks. We will try the following first:
+* Truncate description length to 200 chars
+* Remove feed_url data - we already have the title
+* Introduce date parsing again and only process today's entries and use feedparser's built-in parsed dates: Only allow today's items (could be, that a lot of feeds return no entries then - which is good)
