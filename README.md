@@ -29,12 +29,20 @@ The general idea is to fetch RSS feeds from various sources, put them into a lig
 * RSS URLs are stored in a seperate file
 * Extensive error handling to help finding problems
 * As lightweight as possible
+* I want stuff in config files: YAML, JSON?
+
+### TODO
+
+* Still errors in testing
+* The prompt for ChatGPT should be in a config file
+* The amount of days I will allow in the payload should be configurable
 
 ## What I learn
 
 In this section I will document what I come across and what I have to look up. I will note this here for later so that I do not lose focus.
 
 * What is docstring? (Probably some documentation generator)
+* The OpenAI API has a limit of 10000 tokens for the payload, I need to think about that. Maybe I need to restrict the content that I send there even more.
 
 ## Installation
 
