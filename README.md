@@ -35,7 +35,7 @@ The general idea is to fetch RSS feeds from various sources, put them into a lig
 
 * Still errors in testing
 * The prompt for ChatGPT should be in a config file
-* The amount of days I will allow in the payload should be configurable
+* I need to fetch the latest 3 entries per feed, otherwise I will always only have a snapshot of what's happening. Then again I will need to bring down the payload so that I don't have to use too many tokens.
 
 ## What I learn
 
