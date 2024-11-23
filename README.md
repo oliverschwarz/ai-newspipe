@@ -4,7 +4,7 @@ This is a simple news pipeline from RSS to AI to Markdown. I will mainly use thi
 
 ## System requirements
 
-I am working on a Mac so I don't know whether everything will work on a Windows computer my default. I have left the Windows world many years ago so unfortunately I will not be able to give much support. Additionally I am learning python so I may miss some details here - but I will document them as I learn them.
+I am working on a Mac so I don't know whether everything will work on a Windows computer by default. I have left the Windows world many years ago so unfortunately I will not be able to give much support. Additionally I am learning python so I may miss some details here - but I will document them as I learn them.
 
 * Python 3.12+ (it may run with older versions)
 * ChatGPT API key and subscription (you will need a different subscription than your ChatGPT Pro subscription)
@@ -63,6 +63,10 @@ You will need an OpenAI API Key that you can get on their [API dashboard](https:
 Then open the file and put your OpenAI API key there. We will need it later to ask OpenAI to optimize your news.
 
 ## Running the script
+
+When you run it, the script checks and parses `news_sources.txt` for RSS feeds. It grabs the feeds (if possible), discards everything that is not from today and constructs an object with all entries. Then it pushes that object to the OpenAI API for post-processing. Finally it creates a markdown document in `/summaries`. Run the script with:
+
+    python main.py
 
 ### Verbose output
 
